@@ -20,7 +20,7 @@ func loadSecret() string {
 var Query struct {
 	Repository struct {
 		Issues struct {
-			Edges struct {
+			Edges[] struct {
 				Node struct {
 					Title string
 					Url string

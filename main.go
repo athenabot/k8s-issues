@@ -17,24 +17,42 @@ func loadSecret() string {
 	return string(str)
 }
 
+var Query struct {
+	Repository struct {
+		Issues struct {
+			Edges struct {
+				Node struct {
+					Title string
+					Url string
+				}
+			}
+		} `graphql:"issues(last: 5)"`
+	} `graphql:"repository(owner: \"kubernetes\", name: \"kubernetes\")"`
+}
+
+
+
+//	repository(owner: "kubernetes", name: "kubernetes") {
+//	issues(last: 5, states: OPEN) {
+//	edges {
+//	node {
+//	title
+//	url
+//	labels(first: 50) {
+//	edges {
+//	node {
+//	name
+
 func main() {
 	src := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: loadSecret()},
 	)
 	httpClient := oauth2.NewClient(context.Background(), src)
 
-	var query struct {
-		Viewer struct {
-			Login     githubv4.String
-			CreatedAt githubv4.DateTime
-		}
-	}
-
 	client := githubv4.NewClient(httpClient)
-	err := client.Query(context.Background(), &query, nil)
+	err := client.Query(context.Background(), &Query, nil)
 	if err != nil {
-		// Handle error.
+		fmt.Println(err)
 	}
-	fmt.Println("    Login:", query.Viewer.Login)
-	fmt.Println("CreatedAt:", query.Viewer.CreatedAt)
+	fmt.Println("    Data:", Query.Repository)
 }

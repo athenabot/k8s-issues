@@ -21,6 +21,6 @@ func main() {
 		&oauth2.Token{AccessToken: loadSecret()},
 	)
 	httpClient := oauth2.NewClient(context.Background(), src)
-	issues := getIssues(context.Background(), httpClient, 5)
+	issues := getIssues(context.Background(), httpClient, 10)
 	fmt.Println(issues)
 }

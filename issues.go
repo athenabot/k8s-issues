@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/shurcooL/githubv4"
-	"math"
 	"net/http"
 )
 
@@ -16,7 +14,32 @@ type Issue struct {
 	Labels  []string
 }
 
-func getIssues(ctx context.Context, httpClient *http.Client, minIssuesToReturn int) []Issue {
+func getIssuesUntilCap(ctx context.Context, httpClient *http.Client, lastIssueSeen Issue) ([]Issue, error) {
+	newIssues := make([]Issue, 0)
+	var cursor *githubv4.String = nil
+	for {
+		if len(newIssues) > 30 {
+			break
+		}
+		var issues []Issue
+		var err error
+		// For some reason, := was causing cursor to be interpreted as unused.
+		issues, cursor, err = getIssues(ctx, httpClient, cursor, 10)
+		if err != nil {
+			return nil, err
+		}
+		for _, issue := range issues {
+			if issue.Title == lastIssueSeen.Title {
+				break // TODO use actual IDs
+			}
+			newIssues = append(newIssues, issue)
+		}
+	}
+
+	return newIssues, nil
+}
+
+func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.String, numIssues int) ([]Issue, *githubv4.String, error) {
 	var query struct {
 		Repository struct {
 			Issues struct {
@@ -43,50 +66,43 @@ func getIssues(ctx context.Context, httpClient *http.Client, minIssuesToReturn i
 						} `graphql:"labels(first: 50)"`
 					}
 				}
-			} `graphql:"issues(last: 10, before: $issuesCursor)"`
+			} `graphql:"issues(last: $numIssues, before: $issuesCursor)"`
 		} `graphql:"repository(owner: \"kubernetes\", name: \"kubernetes\")"`
 	}
 
 	variables := map[string]interface{}{
-		"issuesCursor": (*githubv4.String)(nil), // Null after argument to get first page.
+		"issuesCursor": cursor, // Null after argument to get first page.
+		"numIssues": (githubv4.Int)(numIssues),
 	}
 
 	client := githubv4.NewClient(httpClient)
-
-	numLoops := int(math.Ceil(float64(minIssuesToReturn) / 10.0))
 	issues := make([]Issue, 0)
-	for i := 0; i < numLoops; i++ {
-		err := client.Query(ctx, &query, variables)
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		for _, issueEdge := range query.Repository.Issues.Edges {
-			comments := make([]string, len(issueEdge.Node.Comments.Nodes))
-			for index, comment := range issueEdge.Node.Comments.Nodes {
-				comments[index] = comment.Body
-			}
-
-			labels := make([]string, len(issueEdge.Node.Labels.Edges))
-			for index, label := range issueEdge.Node.Labels.Edges {
-				labels[index] = label.Node.Name
-			}
-
-			issues = append(issues, Issue{
-				Body: issueEdge.Node.BodyText,
-				Comments: comments,
-				Labels: labels,
-				Title: issueEdge.Node.Title,
-				Url: issueEdge.Node.Url,
-			})
-		}
-
-		if !query.Repository.Issues.PageInfo.HasPreviousPage {
-			break
-		}
-		variables["issuesCursor"] = githubv4.NewString(query.Repository.Issues.PageInfo.StartCursor)
+	err := client.Query(ctx, &query, variables)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return issues
+	for _, issueEdge := range query.Repository.Issues.Edges {
+		comments := make([]string, len(issueEdge.Node.Comments.Nodes))
+		for index, comment := range issueEdge.Node.Comments.Nodes {
+			comments[index] = comment.Body
+		}
+
+		labels := make([]string, len(issueEdge.Node.Labels.Edges))
+		for index, label := range issueEdge.Node.Labels.Edges {
+			labels[index] = label.Node.Name
+		}
+
+		issues = append(issues, Issue{
+			Body: issueEdge.Node.BodyText,
+			Comments: comments,
+			Labels: labels,
+			Title: issueEdge.Node.Title,
+			Url: issueEdge.Node.Url,
+		})
+	}
+
+	prevPage := githubv4.NewString(query.Repository.Issues.PageInfo.StartCursor)
+
+	return issues, prevPage, nil
 }

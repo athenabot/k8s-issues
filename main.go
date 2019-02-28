@@ -17,15 +17,10 @@ func loadSecret() string {
 }
 
 func main() {
-	var mostRecent Issue
 
-	src := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: loadSecret()},
-	)
+	src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: loadSecret()})
 	httpClient := oauth2.NewClient(context.Background(), src)
-	issues, next, err := getIssues(context.Background(), httpClient, nil,5)
-	mostRecent = issues[0]
-	fmt.Println(issues)
-	fmt.Println(next)
+	issues, _, _ := getIssues(context.Background(), httpClient, nil, 5)
+	err := writeSeenIssues(context.Background(), issues)
 	fmt.Println(err)
 }

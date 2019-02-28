@@ -7,11 +7,13 @@ import (
 )
 
 type Issue struct {
-	Body string
+	Number   int
+	Body     string
 	Comments []string
-	Title string
-	Url   string
-	Labels  []string
+	Title    string
+	Url      string
+	Labels   []string
+	Id       string
 }
 
 func getIssuesUntilCap(ctx context.Context, httpClient *http.Client, lastIssueSeen Issue) ([]Issue, error) {
@@ -49,8 +51,9 @@ func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.St
 				}
 				Edges []struct {
 					Node struct {
-						Title  string
-						Url    string
+						Id       string
+						Title    string
+						Url      string
 						BodyText string
 						Comments struct {
 							Nodes []struct {
@@ -64,6 +67,7 @@ func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.St
 								}
 							}
 						} `graphql:"labels(first: 50)"`
+						Number int
 					}
 				}
 			} `graphql:"issues(last: $numIssues, before: $issuesCursor)"`
@@ -72,7 +76,7 @@ func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.St
 
 	variables := map[string]interface{}{
 		"issuesCursor": cursor, // Null after argument to get first page.
-		"numIssues": (githubv4.Int)(numIssues),
+		"numIssues":    (githubv4.Int)(numIssues),
 	}
 
 	client := githubv4.NewClient(httpClient)
@@ -94,11 +98,13 @@ func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.St
 		}
 
 		issues = append(issues, Issue{
-			Body: issueEdge.Node.BodyText,
+			Body:     issueEdge.Node.BodyText,
 			Comments: comments,
-			Labels: labels,
-			Title: issueEdge.Node.Title,
-			Url: issueEdge.Node.Url,
+			Id:       issueEdge.Node.Id,
+			Labels:   labels,
+			Number:   issueEdge.Node.Number,
+			Title:    issueEdge.Node.Title,
+			Url:      issueEdge.Node.Url,
 		})
 	}
 

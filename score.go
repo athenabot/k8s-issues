@@ -5,24 +5,10 @@ import (
 	"strings"
 )
 
-type Sig struct {
-	name string
-	strongMatches []string
-	weakMatches []string
-}
-
-var sigNetwork = Sig{
-	name: "network",
-	strongMatches: []string{"kube-proxy", "kube proxy"},
-	weakMatches: []string{"service", "ingress"},
-}
-
-var allSigs = []Sig{sigNetwork}
-
 type textSource struct {
-	name string
+	name       string
 	multiplier int
-	content string
+	content    string
 }
 
 type scorePoint struct {
@@ -35,16 +21,17 @@ type sigScore struct {
 	scoreTotal int
 }
 
+// Generate a map of score data for every SIG, for an issue.
 func getScoresForSigs(issue Issue) map[string]sigScore {
 	titleData := textSource{
-		name: "title",
+		name:       "title",
 		multiplier: 3,
-		content: issue.Title,
+		content:    issue.Title,
 	}
 	bodyData := textSource{
-		name: "body",
+		name:       "body",
 		multiplier: 1,
-		content: issue.Body,
+		content:    issue.Body,
 	}
 
 	var sigScores = make(map[string]sigScore)
@@ -63,12 +50,13 @@ func getScoresForSigs(issue Issue) map[string]sigScore {
 	return sigScores
 }
 
+// Calculate the score details for a single SIG and issue.
 func scoreForSig(sig Sig, sources []textSource) []scorePoint {
 	var score []scorePoint = nil
 
 	for _, source := range sources {
 		for _, keyword := range sig.strongMatches {
-			if count := strings.Count(strings.ToLower(source.content), keyword) ; count > 0 {
+			if count := strings.Count(strings.ToLower(source.content), keyword); count > 0 {
 				points := 3 * source.multiplier * count
 				score = append(score, scorePoint{
 					reason: fmt.Sprintf("%s was a strong match in %s", keyword, source.name),
@@ -78,7 +66,7 @@ func scoreForSig(sig Sig, sources []textSource) []scorePoint {
 		}
 		// TODO deduplicate
 		for _, keyword := range sig.weakMatches {
-			if count := strings.Count(strings.ToLower(source.content), keyword) ; count > 0 {
+			if count := strings.Count(strings.ToLower(source.content), keyword); count > 0 {
 				points := 1 * source.multiplier * count
 				score = append(score, scorePoint{
 					reason: fmt.Sprintf("%s was a weak match in %s", keyword, source.name),
@@ -87,5 +75,6 @@ func scoreForSig(sig Sig, sources []textSource) []scorePoint {
 			}
 		}
 	}
+
 	return score
 }

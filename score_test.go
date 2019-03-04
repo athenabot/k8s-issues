@@ -5,16 +5,16 @@ import (
 )
 
 func TestScoreForSig(t *testing.T) {
-	sources := []textSource {
+	sources := []textSource{
 		{
-			name: "title",
+			name:       "title",
 			multiplier: 5,
-			content: "Error while booting kube-proxy",
+			content:    "Error while booting kube-proxy",
 		},
 		{
-			name: "body",
+			name:       "body",
 			multiplier: 1,
-			content: "kube-proxy fails to start, which causes services to fail",
+			content:    "kube-proxy fails to start, which causes services to fail",
 		},
 	}
 	scoreLineItems := scoreForSig(sigNetwork, sources)
@@ -24,7 +24,7 @@ func TestScoreForSig(t *testing.T) {
 		t.Errorf("Expected exactly %d score items: %v", expectedLineItems, scoreLineItems)
 	}
 	expectedScore := 19
-	if scoreLineItems[0].points + scoreLineItems[1].points + scoreLineItems[2].points != expectedScore {
+	if scoreLineItems[0].points+scoreLineItems[1].points+scoreLineItems[2].points != expectedScore {
 		t.Errorf("Expected total score to be %v: %v", expectedScore, scoreLineItems)
 	}
 }
@@ -32,7 +32,7 @@ func TestScoreForSig(t *testing.T) {
 func TestGetScoresForSigs(t *testing.T) {
 	testIssue := Issue{
 		Title: "Test issue mentioning services",
-		Body: "This text is nothing of consequence.",
+		Body:  "This text is nothing of consequence.",
 	}
 	sigScores := getScoresForSigs(testIssue)
 

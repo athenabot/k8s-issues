@@ -71,7 +71,7 @@ func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.St
 					}
 				}
 			} `graphql:"issues(last: $numIssues, before: $issuesCursor)"`
-		} `graphql:"repository(owner: \"kubernetes\", name: \"kubernetes\")"`
+		} `graphql:"repository(owner: \"vllry\", name: \"athena-github-bot\")"`
 	}
 
 	variables := map[string]interface{}{

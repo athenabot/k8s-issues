@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
@@ -20,7 +21,12 @@ func main() {
 	src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: loadSecret()})
 	httpClient := oauth2.NewClient(context.Background(), src)
 	issues, _, _ := getIssues(context.Background(), httpClient, nil, 10)
-	getScoresForSigs(issues[0])
+	for _, issue := range issues {
+		labels := getSigLabelsForIssue(issue)
+		fmt.Println(labels, issue.Url)
+		err := commentWithSigs(context.Background(), httpClient, issue.Id, labels)
+		fmt.Println(err)
+	}
 	//err := writeSeenIssues(context.Background(), issues)
 	//fmt.Println(err)
 }

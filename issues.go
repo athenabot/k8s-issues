@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/shurcooL/githubv4"
 	"net/http"
+	"strings"
 )
 
 type Issue struct {
@@ -14,31 +15,6 @@ type Issue struct {
 	Url      string
 	Labels   []string
 	Id       string
-}
-
-func getIssuesUntilCap(ctx context.Context, httpClient *http.Client, lastIssueSeen Issue) ([]Issue, error) {
-	newIssues := make([]Issue, 0)
-	var cursor *githubv4.String = nil
-	for {
-		if len(newIssues) > 30 {
-			break
-		}
-		var issues []Issue
-		var err error
-		// For some reason, := was causing cursor to be interpreted as unused.
-		issues, cursor, err = getIssues(ctx, httpClient, cursor, 10)
-		if err != nil {
-			return nil, err
-		}
-		for _, issue := range issues {
-			if issue.Title == lastIssueSeen.Title {
-				break // TODO use actual IDs
-			}
-			newIssues = append(newIssues, issue)
-		}
-	}
-
-	return newIssues, nil
 }
 
 func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.String, numIssues int) ([]Issue, *githubv4.String, error) {
@@ -111,4 +87,25 @@ func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.St
 	prevPage := githubv4.NewString(query.Repository.Issues.PageInfo.StartCursor)
 
 	return issues, prevPage, nil
+}
+
+// Removes SIG labels from the list if they had already been added in the past.
+func filterLabels(labels []string, issue Issue) []string {
+	sigsCommented := make(map[string]bool)
+	for _, comment := range issue.Comments {
+		for _, line := range strings.Split(comment, "\n") {
+			if strings.HasPrefix(line, "/sig") {
+				commentedSig := strings.Split(line, " ")[1]
+				sigsCommented[commentedSig] = true
+			}
+		}
+	}
+
+	var uniqueLabels []string = nil
+	for _, label := range labels {
+		if _, found := sigsCommented[label]; !found {
+			uniqueLabels = append(uniqueLabels, label)
+		}
+	}
+	return uniqueLabels
 }

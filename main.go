@@ -23,9 +23,10 @@ func main() {
 	issues, _, _ := getIssues(context.Background(), httpClient, nil, 10)
 	for _, issue := range issues {
 		labels := getSigLabelsForIssue(issue)
+		labels = filterLabels(labels, issue)
 		fmt.Println(labels, issue.Url)
-		err := commentWithSigs(context.Background(), httpClient, issue.Id, labels)
-		fmt.Println(err)
+		//err := commentWithSigs(context.Background(), httpClient, issue.Id, labels)
+		//fmt.Println(err)
 	}
 	//err := writeSeenIssues(context.Background(), issues)
 	//fmt.Println(err)

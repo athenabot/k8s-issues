@@ -20,13 +20,16 @@ var m struct {
 }
 
 func commentWithSigs(ctx context.Context, httpClient *http.Client, issueId string, sigs []string) error {
+	if len(sigs) == 0 {
+		return nil
+	}
 
 	comment := ""
 	for _, sigName := range sigs {
 		comment += "/sig " + sigName + "\n"
 	}
 	comment += "\nThese SIGs are my best guesses for this issue. Please comment `/remove-sig <name>` if I am incorrect about one." +
-		"\nI am a bot run by @vllry."
+		"\n🤖 I am a bot run by @vllry. 👩‍🔬"
 	return addComment(ctx, httpClient, issueId, comment)
 }
 

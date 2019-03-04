@@ -246,6 +246,7 @@
   input-imports = [
     "cloud.google.com/go/firestore",
     "github.com/shurcooL/githubv4",
+    "golang.org/x/oauth2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

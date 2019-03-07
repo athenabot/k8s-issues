@@ -6,10 +6,16 @@ type Sig struct {
 	weakMatches   []string
 }
 
+var sigClusterLifeCycle = Sig{
+	name:          "cluster-lifecycle",
+	strongMatches: []string{"kubeadm"},
+	weakMatches:   []string{},
+}
+
 var sigNetwork = Sig{
 	name:          "network",
-	strongMatches: []string{"kube-proxy", "kube proxy"},
-	weakMatches:   []string{"network", "service", "ingress", "connection"},
+	strongMatches: []string{"kube-dns", "kube dns", "kube-proxy", "kube proxy", "cni", "calico", "flannel", "istio", "linkerd"},
+	weakMatches:   []string{"envoy", "network", "service", "ingress", "connection"},
 }
 
 var sigNode = Sig{
@@ -24,8 +30,16 @@ var sigScheduling = Sig{
 	weakMatches:   []string{"schedule"},
 }
 
+var sigStorage = Sig{
+	name:          "storage",
+	strongMatches: []string{"persistentvolume"},
+	weakMatches:   []string{"pv", "pvc"},
+}
+
 var allSigs = []Sig{
+	sigClusterLifeCycle,
 	sigNetwork,
 	sigNode,
 	sigScheduling,
+	sigStorage,
 }

@@ -29,7 +29,7 @@ func commentWithSigs(ctx context.Context, httpClient *http.Client, issueId strin
 		comment += "/sig " + sigName + "\n"
 	}
 	comment += "\nThese SIGs are my best guesses for this issue. Please comment `/remove-sig <name>` if I am incorrect about one." +
-		"\n🤖 I am a bot run by @vllry. 👩‍🔬"
+		"\n🤖 I am an (alpha) bot run by @vllry. 👩‍🔬"
 	return addComment(ctx, httpClient, issueId, comment)
 }
 

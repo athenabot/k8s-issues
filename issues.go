@@ -95,8 +95,10 @@ func filterLabels(labels []string, issue Issue) []string {
 	for _, comment := range issue.Comments {
 		for _, line := range strings.Split(comment, "\n") {
 			if strings.HasPrefix(line, "/sig") {
-				commentedSig := strings.Split(line, " ")[1]
-				sigsCommented[commentedSig] = true
+				splitSigComment := strings.Split(line, " ")
+				if len(splitSigComment) > 1 {
+					sigsCommented[splitSigComment[1]] = true
+				}
 			}
 		}
 	}

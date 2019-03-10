@@ -20,8 +20,8 @@ var sigClusterLifeCycle = Sig{
 
 var sigNetwork = Sig{
 	name:          "network",
-	strongMatches: []string{"kube-dns", "kube dns", "kube-proxy", "kube proxy", "cni", "calico", "flannel", "istio", "linkerd"},
-	weakMatches:   []string{"envoy", "network", "service", "ingress", "connection"},
+	strongMatches: []string{"ipv6", "ipvs", "ingress", "kube-dns", "kube dns", "kube-proxy", "kube proxy", "cni", "calico", "flannel", "istio", "linkerd"},
+	weakMatches:   []string{"envoy", "network", "service", "connection"},
 }
 
 var sigNode = Sig{

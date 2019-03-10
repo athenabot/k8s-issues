@@ -12,6 +12,12 @@ var sigAws = Sig{
 	weakMatches:   []string{"iam", "efs", "ebs", "alb ingress", "heptio authenticator"},
 }
 
+var sigCli = Sig{
+	name: "cli",
+	strongMatches: []string{},
+	weakMatches: []string{"kubectl"},
+}
+
 var sigClusterLifeCycle = Sig{
 	name:          "cluster-lifecycle",
 	strongMatches: []string{"kubeadm"},
@@ -20,8 +26,8 @@ var sigClusterLifeCycle = Sig{
 
 var sigNetwork = Sig{
 	name:          "network",
-	strongMatches: []string{"ipv6", "ipvs", "ingress", "kube-dns", "kube dns", "kube-proxy", "kube proxy", "cni", "calico", "flannel", "istio", "linkerd"},
-	weakMatches:   []string{"envoy", "network", "service", "connection"},
+	strongMatches: []string{"ipv6", "ipvs", "ingress", "kube-dns", "kube dns", "kube-proxy", "kube proxy", "cni"},
+	weakMatches:   []string{"envoy", "network", "service", "connection", "calico", "flannel", "istio", "linkerd"},
 }
 
 var sigNode = Sig{
@@ -43,6 +49,7 @@ var sigStorage = Sig{
 }
 
 var allSigs = []Sig{
+	sigCli,
 	sigClusterLifeCycle,
 	sigNetwork,
 	sigNode,

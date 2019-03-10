@@ -6,6 +6,12 @@ type Sig struct {
 	weakMatches   []string
 }
 
+var sigAws = Sig{
+	name:          "aws",
+	strongMatches: []string{"aws", "eks", "cloud-provider-aws", "aws-alb-ingress-controller", "aws-iam-authenticator", "aws-encryption-provider", "aws-ebs-csi-driver",  "aws alb ingress controller", "aws iam authenticator", "aws encryption provider", "aws ebs csi driver"},
+	weakMatches:   []string{"iam", "efs", "ebs", "alb ingress", "heptio authenticator"},
+}
+
 var sigClusterLifeCycle = Sig{
 	name:          "cluster-lifecycle",
 	strongMatches: []string{"kubeadm"},
@@ -33,7 +39,7 @@ var sigScheduling = Sig{
 var sigStorage = Sig{
 	name:          "storage",
 	strongMatches: []string{"persistentvolume"},
-	weakMatches:   []string{"pv", "pvc"},
+	weakMatches:   []string{"pv", "pvc", "efs", "ebs"},
 }
 
 var allSigs = []Sig{
@@ -42,4 +48,5 @@ var allSigs = []Sig{
 	sigNode,
 	sigScheduling,
 	sigStorage,
+	sigAws,
 }

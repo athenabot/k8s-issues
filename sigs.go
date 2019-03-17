@@ -8,14 +8,14 @@ type Sig struct {
 
 var sigAws = Sig{
 	name:          "aws",
-	strongMatches: []string{"aws", "eks", "cloud-provider-aws", "aws-alb-ingress-controller", "aws-iam-authenticator", "aws-encryption-provider", "aws-ebs-csi-driver",  "aws alb ingress controller", "aws iam authenticator", "aws encryption provider", "aws ebs csi driver"},
+	strongMatches: []string{"aws", "eks", "cloud-provider-aws", "aws-alb-ingress-controller", "aws-iam-authenticator", "aws-encryption-provider", "aws-ebs-csi-driver", "aws alb ingress controller", "aws iam authenticator", "aws encryption provider", "aws ebs csi driver"},
 	weakMatches:   []string{"iam", "efs", "ebs", "alb ingress", "heptio authenticator"},
 }
 
 var sigCli = Sig{
-	name: "cli",
+	name:          "cli",
 	strongMatches: []string{},
-	weakMatches: []string{"kubectl"},
+	weakMatches:   []string{"kubectl"},
 }
 
 var sigClusterLifeCycle = Sig{

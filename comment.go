@@ -38,7 +38,7 @@ func addComment(ctx context.Context, httpClient *http.Client, issueId string, co
 
 	input := githubv4.AddCommentInput{
 		SubjectID: issueId,
-		Body:   githubv4.String(comment),
+		Body:      githubv4.String(comment),
 	}
 	return client.Mutate(ctx, &m, input, nil)
 }

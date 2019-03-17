@@ -38,7 +38,7 @@ func getSigLabelsForIssue(issue Issue) []string {
 	// Quick hack to catch non-comment sig additions (EG k8s CI bot)
 	for _, label := range issue.Labels {
 		if strings.HasPrefix(label, "sig/") {
-			sigName := strings.Split(label,"sig/")[1]
+			sigName := strings.Split(label, "sig/")[1]
 			for i, pickedLabel := range sigs {
 				if sigName == pickedLabel {
 					fmt.Println("already labeled", sigName)

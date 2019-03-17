@@ -32,8 +32,8 @@ var sigNetwork = Sig{
 
 var sigNode = Sig{
 	name:          "node",
-	strongMatches: []string{"kubelet"},
-	weakMatches:   []string{"node"},
+	strongMatches: []string{},
+	weakMatches:   []string{"node", "kubelet"},
 }
 
 var sigScheduling = Sig{

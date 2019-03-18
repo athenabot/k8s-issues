@@ -1,4 +1,4 @@
-# Athenaboxt k8s-issues
+# Athenabot k8s-issues
 
 This is a simple (WIP) bot, for classifying issues in kubernetes/kubernetes.
 

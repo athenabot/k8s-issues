@@ -22,7 +22,7 @@ func issueNeedsTriage(issue *Issue) bool {
 	}
 
 	// Don't relabel resolved issues.
-	if issue.hasCommentWithCommand("/triage", "resolved") {
+	if issue.hasCommentWithCommand("/remove-triage", "unresolved") {
 		return false
 	}
 

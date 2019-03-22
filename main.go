@@ -6,6 +6,7 @@ import (
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
+	"strings"
 )
 
 func loadSecret() string {
@@ -13,13 +14,16 @@ func loadSecret() string {
 	if err != nil {
 		log.Println(err)
 	}
-	return string(str)
+	return strings.Trim(string(str), "\n")
 }
 
 func main() {
 	src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: loadSecret()})
 	httpClient := oauth2.NewClient(context.Background(), src)
-	issues, _, _ := getIssues(context.Background(), httpClient, nil, 30)
+	issues, _, err := getIssues(context.Background(), httpClient, nil, 20)
+	if err != nil {
+		panic(err)
+	}
 	for _, issue := range issues {
 		labels := getSigLabelsForIssue(issue)
 		labels = filterLabels(labels, issue)

@@ -17,6 +17,26 @@ type Issue struct {
 	Id       string
 }
 
+func (issue *Issue) hasLabel(searchFor string) bool {
+	for _, label := range issue.Labels {
+		if label == searchFor {
+			return true
+		}
+	}
+	return false
+}
+
+func (issue *Issue) hasCommentWithCommand(command string, key string) bool {
+	for _, comment := range issue.Comments {
+		for _, line := range strings.Split(comment, "\n") {
+			if strings.HasPrefix(line, command) && strings.Contains(line, key) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.String, numIssues int) ([]Issue, *githubv4.String, error) {
 	var query struct {
 		Repository struct {

@@ -6,10 +6,28 @@ type Sig struct {
 	weakMatches   []string
 }
 
+var sigApps = Sig{
+	name:          "apps",
+	strongMatches: []string{"cronjob"},
+	weakMatches:   []string{"deployment"},
+}
+
+var sigAutoscaling = Sig{
+	name:          "autoscaling",
+	strongMatches: []string{"hpa", "autoscaler"},
+	weakMatches:   []string{},
+}
+
 var sigAws = Sig{
 	name:          "aws",
 	strongMatches: []string{"aws", "eks", "cloud-provider-aws", "aws-alb-ingress-controller", "aws-iam-authenticator", "aws-encryption-provider", "aws-ebs-csi-driver", "aws alb ingress controller", "aws iam authenticator", "aws encryption provider", "aws ebs csi driver"},
 	weakMatches:   []string{"iam", "efs", "ebs", "alb ingress", "heptio authenticator"},
+}
+
+var sigAzure = Sig{
+	name:          "azure",
+	strongMatches: []string{"azure"},
+	weakMatches:   []string{},
 }
 
 var sigCli = Sig{
@@ -21,6 +39,18 @@ var sigCli = Sig{
 var sigClusterLifeCycle = Sig{
 	name:          "cluster-lifecycle",
 	strongMatches: []string{"kubeadm"},
+	weakMatches:   []string{},
+}
+
+var sigGcp = Sig{
+	name:          "gcp",
+	strongMatches: []string{"gcp", "glb", "compute engine"},
+	weakMatches:   []string{"google"},
+}
+
+var sigMulticluster = Sig{
+	name:          "multicluster",
+	strongMatches: []string{"federation", "cluster registry"},
 	weakMatches:   []string{},
 }
 
@@ -48,12 +78,31 @@ var sigStorage = Sig{
 	weakMatches:   []string{"pv", "pvc", "efs", "ebs"},
 }
 
+var sigVmWare = Sig{
+	name:          "vmware",
+	strongMatches: []string{"vmware", "vsphere"},
+	weakMatches:   []string{},
+}
+
+var sigWindows = Sig{
+	name:          "windows",
+	strongMatches: []string{"windows"},
+	weakMatches:   []string{},
+}
+
 var allSigs = []Sig{
+	sigApps,
+	sigAutoscaling,
+	sigAws,
+	sigAzure,
 	sigCli,
 	sigClusterLifeCycle,
+	sigGcp,
+	sigMulticluster,
 	sigNetwork,
 	sigNode,
 	sigScheduling,
 	sigStorage,
-	sigAws,
+	sigVmWare,
+	sigWindows,
 }

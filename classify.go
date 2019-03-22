@@ -18,11 +18,11 @@ func getSigLabelsForIssue(issue Issue) []string {
 		sizeScaling = 1
 	}
 
-	// Quick hack to be less inclined to comment on issues that have already been sorted.
+	// If a human has labeled it, they're probably right.
+	// TODO: comment with suggestions instead.
 	for _, label := range issue.Labels {
 		if strings.HasPrefix(label, "sig/") {
-			sizeScaling *= 1.3
-			break
+			return sigs
 		}
 	}
 

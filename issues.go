@@ -8,13 +8,14 @@ import (
 )
 
 type Issue struct {
-	Number   int
-	Body     string
-	Comments []string
-	Title    string
-	Url      string
-	Labels   []string
-	Id       string
+	Assignees []string
+	Number    int
+	Body      string
+	Comments  []string
+	Title     string
+	Url       string
+	Labels    []string
+	Id        string
 }
 
 func (issue *Issue) hasLabel(searchFor string) bool {
@@ -37,7 +38,7 @@ func (issue *Issue) hasCommentWithCommand(command string, key string) bool {
 	return false
 }
 
-func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.String, numIssues int) ([]Issue, *githubv4.String, error) {
+func getLatestIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.String, numIssues int) ([]Issue, *githubv4.String, error) {
 	var query struct {
 		Repository struct {
 			Issues struct {
@@ -63,6 +64,13 @@ func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.St
 								}
 							}
 						} `graphql:"labels(first: 50)"`
+						Assignees struct {
+							Edges []struct {
+								Node struct {
+									Name string
+								}
+							}
+						} `graphql:"assignees(first: 5)"`
 						Number int
 					}
 				}
@@ -94,14 +102,105 @@ func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.St
 			labels[index] = label.Node.Name
 		}
 
+		assignees := make([]string, len(issueEdge.Node.Assignees.Edges))
+		for index, user := range issueEdge.Node.Assignees.Edges {
+			assignees[index] = user.Node.Name
+		}
+
 		issues = append(issues, Issue{
-			Body:     issueEdge.Node.BodyText,
-			Comments: comments,
-			Id:       issueEdge.Node.Id,
-			Labels:   labels,
-			Number:   issueEdge.Node.Number,
-			Title:    issueEdge.Node.Title,
-			Url:      issueEdge.Node.Url,
+			Assignees: assignees,
+			Body:      issueEdge.Node.BodyText,
+			Comments:  comments,
+			Id:        issueEdge.Node.Id,
+			Labels:    labels,
+			Number:    issueEdge.Node.Number,
+			Title:     issueEdge.Node.Title,
+			Url:       issueEdge.Node.Url,
+		})
+	}
+
+	prevPage := githubv4.NewString(query.Repository.Issues.PageInfo.StartCursor)
+
+	return issues, prevPage, nil
+}
+
+func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.String, numIssues int) ([]Issue, *githubv4.String, error) {
+	var query struct {
+		Repository struct {
+			Issues struct {
+				PageInfo struct {
+					StartCursor     githubv4.String
+					HasPreviousPage bool
+				}
+				Edges []struct {
+					Node struct {
+						Id       string
+						Title    string
+						Url      string
+						BodyText string
+						Comments struct {
+							Nodes []struct {
+								Body string
+							}
+						} `graphql:"comments(first: 50)"`
+						Labels struct {
+							Edges []struct {
+								Node struct {
+									Name string
+								}
+							}
+						} `graphql:"labels(first: 50)"`
+						Assignees struct {
+							Edges []struct {
+								Node struct {
+									Name string
+								}
+							}
+						} `graphql:"assignees(first: 5)"`
+						Number int
+					}
+				}
+			} `graphql:"issues(last: $numIssues, before: $issuesCursor, states:OPEN, labels:[\"sig/network\", \"triage/unresolved\"])"`
+		} `graphql:"repository(owner: \"kubernetes\", name: \"kubernetes\")"`
+	}
+
+	variables := map[string]interface{}{
+		"issuesCursor": cursor, // Null after argument to get first page.
+		"numIssues":    (githubv4.Int)(numIssues),
+	}
+
+	client := githubv4.NewClient(httpClient)
+	issues := make([]Issue, 0)
+	err := client.Query(ctx, &query, variables)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, issueEdge := range query.Repository.Issues.Edges {
+		comments := make([]string, len(issueEdge.Node.Comments.Nodes))
+		for index, comment := range issueEdge.Node.Comments.Nodes {
+			comments[index] = comment.Body
+		}
+
+		labels := make([]string, len(issueEdge.Node.Labels.Edges))
+		for index, label := range issueEdge.Node.Labels.Edges {
+			labels[index] = label.Node.Name
+		}
+
+		assignees := make([]string, len(issueEdge.Node.Assignees.Edges))
+		for index, user := range issueEdge.Node.Assignees.Edges {
+			assignees[index] = user.Node.Name
+		}
+
+		issues = append(issues, Issue{
+			Assignees: assignees,
+			Body:      issueEdge.Node.BodyText,
+			Comments:  comments,
+			Id:        issueEdge.Node.Id,
+			Labels:    labels,
+			Number:    issueEdge.Node.Number,
+			Title:     issueEdge.Node.Title,
+			Url:       issueEdge.Node.Url,
 		})
 	}
 

@@ -31,6 +31,8 @@ func issueNeedsTriage(issue *Issue) bool {
 
 func triageLabel(ctx context.Context, httpClient *http.Client, issue *Issue) {
 	if issueNeedsTriage(issue) {
-		addComment(ctx, httpClient,issue.Id,"/triage unresolved")
+		comment := "/triage unresolved"
+		comment += "\n\nComment `/remove-triage unresolved` when the issue is assessed and confirmed."
+		addComment(ctx, httpClient, issue.Id, comment)
 	}
 }

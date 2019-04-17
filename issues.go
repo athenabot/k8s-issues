@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/shurcooL/githubv4"
 	"net/http"
 	"strings"
@@ -136,8 +137,6 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 					Node struct {
 						Id       string
 						Title    string
-						Url      string
-						BodyText string
 						Comments struct {
 							Nodes []struct {
 								Body string
@@ -149,18 +148,28 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 									Name string
 								}
 							}
-						} `graphql:"labels(first: 50)"`
+						} `graphql:"labels(first: 30)"`
 						Assignees struct {
 							Edges []struct {
 								Node struct {
-									Name string
+									Login string
 								}
 							}
-						} `graphql:"assignees(first: 5)"`
+						} `graphql:"assignees(first: 10)"`
+						TimelineItems struct {
+							Nodes []struct {
+								AssignedEvent struct {
+										CreatedAt string
+								} `graphql:"... on AssignedEvent"`
+								LabeledEvent struct {
+									CreatedAt string
+								} `graphql:"... on AssignedEvent"`
+							}
+						} `graphql:"timeline(last: 50)"`
 						Number int
 					}
 				}
-			} `graphql:"issues(last: $numIssues, before: $issuesCursor, states:OPEN, labels:[\"sig/network\", \"triage/unresolved\"])"`
+			} `graphql:"issues(last: $numIssues, before: $issuesCursor, states:OPEN, labels:[\"triage/unresolved\"])"`
 		} `graphql:"repository(owner: \"kubernetes\", name: \"kubernetes\")"`
 	}
 
@@ -189,18 +198,36 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 
 		assignees := make([]string, len(issueEdge.Node.Assignees.Edges))
 		for index, user := range issueEdge.Node.Assignees.Edges {
-			assignees[index] = user.Node.Name
+			if user.Node.Login != "" {
+				assignees[index] = "@" + user.Node.Login
+			}
 		}
+
+		lastAssignedTime := ""
+		for _, timelineItem := range issueEdge.Node.TimelineItems.Nodes {
+			if timelineItem.AssignedEvent.CreatedAt != "" {
+				lastAssignedTime = timelineItem.AssignedEvent.CreatedAt
+				break // Get most recent only
+			}
+		}
+		fmt.Println(lastAssignedTime)
+
+		unresolvedLastAdded := ""
+		for _, timelineItem := range issueEdge.Node.TimelineItems.Nodes {
+			if timelineItem.LabeledEvent.CreatedAt != ""  {
+				unresolvedLastAdded = timelineItem.LabeledEvent.CreatedAt
+				break // Get most recent only TODO filter
+			}
+		}
+		fmt.Println(unresolvedLastAdded)
 
 		issues = append(issues, Issue{
 			Assignees: assignees,
-			Body:      issueEdge.Node.BodyText,
 			Comments:  comments,
 			Id:        issueEdge.Node.Id,
 			Labels:    labels,
 			Number:    issueEdge.Node.Number,
 			Title:     issueEdge.Node.Title,
-			Url:       issueEdge.Node.Url,
 		})
 	}
 

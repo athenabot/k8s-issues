@@ -20,7 +20,7 @@ func loadSecret() string {
 func main() {
 	src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: loadSecret()})
 	httpClient := oauth2.NewClient(context.Background(), src)
-	issues, _, err := getLatestIssues(context.Background(), httpClient, nil, 20)
+	issues, _, err := getLatestIssues(context.Background(), httpClient, nil, 10)
 	if err != nil {
 		panic(err)
 	}
@@ -36,7 +36,11 @@ func main() {
 	issues, _, err = getUnresolvedIssues(context.Background(), httpClient, nil, 20)
 	fmt.Println(err)
 	for _, issue := range issues {
-		fmt.Println(issue.Labels, issue.Assignees, issue.Title)
+		if len(issue.Assignees) != 0 {
+			if !issue.hasCommentWithCommand("athenabot", "mark-triage-reminder") {
+				fmt.Println(issue.Title, strings.Join(issue.Assignees, ", "))
+			}
+		}
 	}
 	//err := writeSeenIssues(context.Background(), issues)
 	//fmt.Println(err)

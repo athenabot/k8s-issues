@@ -36,9 +36,3 @@ func triageLabel(ctx context.Context, httpClient *http.Client, issue *Issue) {
 		addComment(ctx, httpClient, issue.Id, comment)
 	}
 }
-
-func commentTriageReminder(ctx context.Context, httpClient *http.Client, issue *Issue) {
-	comment := "If this issue has been triaged, please comment `/remove-triage unresolved`."
-	comment += "\n\nMeta:\n/athenabot mark-triage-reminder"
-	addComment(ctx, httpClient, issue.Id, comment)
-}

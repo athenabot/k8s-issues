@@ -6,10 +6,12 @@ import (
 	"github.com/shurcooL/githubv4"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type Issue struct {
 	Assignees []string
+	LastAssignedTime time.Time
 	Number    int
 	Body      string
 	Comments  []string
@@ -203,26 +205,22 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 			}
 		}
 
-		lastAssignedTime := ""
+		// TODO this is messy, clean up
+		lastAssignedTimeStr := ""
 		for _, timelineItem := range issueEdge.Node.TimelineItems.Nodes {
 			if timelineItem.AssignedEvent.CreatedAt != "" {
-				lastAssignedTime = timelineItem.AssignedEvent.CreatedAt
+				lastAssignedTimeStr = timelineItem.AssignedEvent.CreatedAt
 				break // Get most recent only
 			}
 		}
-		fmt.Println(lastAssignedTime)
-
-		unresolvedLastAdded := ""
-		for _, timelineItem := range issueEdge.Node.TimelineItems.Nodes {
-			if timelineItem.LabeledEvent.CreatedAt != ""  {
-				unresolvedLastAdded = timelineItem.LabeledEvent.CreatedAt
-				break // Get most recent only TODO filter
-			}
+		lastAssignedTime, err := time.Parse(time.RFC3339, lastAssignedTimeStr)
+		if err != nil {
+			fmt.Println(err)
 		}
-		fmt.Println(unresolvedLastAdded)
 
 		issues = append(issues, Issue{
 			Assignees: assignees,
+			LastAssignedTime: lastAssignedTime,
 			Comments:  comments,
 			Id:        issueEdge.Node.Id,
 			Labels:    labels,

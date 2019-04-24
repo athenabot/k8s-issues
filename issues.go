@@ -66,13 +66,14 @@ func getIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.St
 						Number int
 					}
 				}
-			} `graphql:"issues(last: $numIssues, before: $issuesCursor)"`
+			} `graphql:"issues(last: $numIssues, before: $issuesCursor, states: $issueState)"`
 		} `graphql:"repository(owner: \"kubernetes\", name: \"kubernetes\")"`
 	}
 
 	variables := map[string]interface{}{
 		"issuesCursor": cursor, // Null after argument to get first page.
 		"numIssues":    (githubv4.Int)(numIssues),
+		"issueState": []githubv4.IssueState{githubv4.IssueStateOpen},
 	}
 
 	client := githubv4.NewClient(httpClient)

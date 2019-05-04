@@ -8,7 +8,7 @@ import (
 )
 
 func sendTriageReminders(httpClient *http.Client) {
-	issues, _, err := getUnresolvedIssues(context.Background(), httpClient, nil, 30)
+	issues, err := getUnresolvedIssues(context.Background(), httpClient)
 	if err != nil {
 		panic(err)
 	}

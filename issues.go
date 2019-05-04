@@ -183,6 +183,7 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 							}
 						} `graphql:"timeline(last: 50)"`
 						Number int
+						Url string
 					}
 				}
 			} `graphql:"issues(last: $numIssues, before: $issuesCursor, states:OPEN, labels:[\"triage/unresolved\"])"`
@@ -251,6 +252,7 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 			Labels:           labels,
 			Number:           issueEdge.Node.Number,
 			Title:            issueEdge.Node.Title,
+			Url:              issueEdge.Node.Url,
 		})
 
 	}

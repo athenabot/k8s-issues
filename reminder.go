@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -53,10 +52,7 @@ func filterIssuesAssignedLongerThan(issues []Issue, duration time.Duration) []Is
 	now := time.Now()
 	for _, issue := range issues {
 		if len(issue.Assignees) != 0 {
-			fmt.Println(issue.Title, strings.Join(issue.Assignees, ", "))
-
 			assignedDuration := now.Sub(issue.LastAssignedTime)
-			fmt.Println("issue has been assigned for: ", assignedDuration)
 			if assignedDuration >= duration {
 				filteredIssues = append(filteredIssues, issue)
 			}
@@ -70,5 +66,5 @@ func commentTriageReminder(ctx context.Context, httpClient *http.Client, issue *
 	comment := strings.Join(assignees, " ") + "\n"
 	comment += "If this issue has been triaged, please comment `/remove-triage unresolved`." +
 		"\n\nIf you aren't able to handle this issue, consider unassigning yourself and/or adding the `help-wanted` label."
-	//addComment(ctx, httpClient, issue.Id, comment)
+	_ = addComment(ctx, httpClient, issue, comment)
 }

@@ -20,7 +20,7 @@ func loadSecret() string {
 func main() {
 	src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: loadSecret()})
 	httpClient := oauth2.NewClient(context.Background(), src)
-	issues, _, err := getLatestIssues(context.Background(), httpClient, nil, 5)
+	issues, _, err := getLatestIssues(context.Background(), httpClient, nil, 30)
 	if err != nil {
 		panic(err)
 	}

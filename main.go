@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
-	"time"
 )
 
 func loadSecret() string {
@@ -21,7 +20,7 @@ func loadSecret() string {
 func main() {
 	src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: loadSecret()})
 	httpClient := oauth2.NewClient(context.Background(), src)
-	issues, _, err := getLatestIssues(context.Background(), httpClient, nil, 20)
+	issues, _, err := getLatestIssues(context.Background(), httpClient, nil, 1)
 	if err != nil {
 		panic(err)
 	}
@@ -34,20 +33,8 @@ func main() {
 		triageLabel(context.Background(), httpClient, &issue)
 	}
 
-	issues, _, err = getUnresolvedIssues(context.Background(), httpClient, nil, 40)
-	fmt.Println(err)
-	for _, issue := range issues {
-		if len(issue.Assignees) != 0 {
-			if !issue.hasCommentWithCommand("athenabot", "mark-triage-reminder") {
-				fmt.Println(issue.Title, strings.Join(issue.Assignees, ", "))
-				assignedForHours := time.Now().Sub(issue.LastAssignedTime).Hours()
-				fmt.Println("issue has been assigned for: ", assignedForHours)
-				if assignedForHours > 7*24 {
-					commentTriageReminder(context.Background(), httpClient, &issue, issue.Assignees)
-				}
-			}
-		}
-	}
+	sendReminders(httpClient)
+
 	//err := writeSeenIssues(context.Background(), issues)
 	//fmt.Println(err)
 }

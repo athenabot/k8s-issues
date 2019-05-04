@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/shurcooL/githubv4"
 	"net/http"
-	"strings"
 )
 
 var m struct {
@@ -33,14 +31,6 @@ func commentWithSigs(ctx context.Context, httpClient *http.Client, issueId strin
 	comment += "\nThese SIGs are my best guesses for this issue. Please comment `/remove-sig <name>` if I am incorrect about one."
 
 	return addComment(ctx, httpClient, issueId, comment)
-}
-
-func commentTriageReminder(ctx context.Context, httpClient *http.Client, issue *Issue, assignees []string) {
-	comment := strings.Join(assignees, " ") + "\n"
-	comment += "If this issue has been triaged, please comment `/remove-triage unresolved`."
-	comment += "\n\nMeta:\n/athenabot mark-triage-reminder"
-	fmt.Println(comment)
-	//addComment(ctx, httpClient, issue.Id, comment)
 }
 
 func addComment(ctx context.Context, httpClient *http.Client, issueId string, comment string) error {

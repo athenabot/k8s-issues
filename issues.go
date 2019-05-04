@@ -10,15 +10,21 @@ import (
 )
 
 type Issue struct {
-	Assignees []string
+	Assignees        []string
 	LastAssignedTime time.Time
-	Number    int
-	Body      string
-	Comments  []string
-	Title     string
-	Url       string
-	Labels    []string
-	Id        string
+	Number           int
+	Body             string
+	Comments         []IssueComment
+	Title            string
+	Url              string
+	Labels           []string
+	Id               string
+}
+
+type IssueComment struct {
+	Body        string
+	CreatedTime time.Time
+	User        string
 }
 
 func (issue *Issue) hasLabel(searchFor string) bool {
@@ -32,7 +38,7 @@ func (issue *Issue) hasLabel(searchFor string) bool {
 
 func (issue *Issue) hasCommentWithCommand(command string, key string) bool {
 	for _, comment := range issue.Comments {
-		for _, line := range strings.Split(comment, "\n") {
+		for _, line := range strings.Split(comment.Body, "\n") {
 			if strings.HasPrefix(line, command) && strings.Contains(line, key) {
 				return true
 			}
@@ -84,7 +90,7 @@ func getLatestIssues(ctx context.Context, httpClient *http.Client, cursor *githu
 	variables := map[string]interface{}{
 		"issuesCursor": cursor, // Null after argument to get first page.
 		"numIssues":    (githubv4.Int)(numIssues),
-		"issueState": []githubv4.IssueState{githubv4.IssueStateOpen},
+		"issueState":   []githubv4.IssueState{githubv4.IssueStateOpen},
 	}
 
 	client := githubv4.NewClient(httpClient)
@@ -95,9 +101,13 @@ func getLatestIssues(ctx context.Context, httpClient *http.Client, cursor *githu
 	}
 
 	for _, issueEdge := range query.Repository.Issues.Edges {
-		comments := make([]string, len(issueEdge.Node.Comments.Nodes))
-		for index, comment := range issueEdge.Node.Comments.Nodes {
-			comments[index] = comment.Body
+
+		// TODO clean up this use of comments. Use label history instead.
+		comments := make([]IssueComment, len(issueEdge.Node.Comments.Nodes))
+		for index, ghComment := range issueEdge.Node.Comments.Nodes {
+			comments[index] = IssueComment{
+				Body: ghComment.Body,
+			}
 		}
 
 		labels := make([]string, len(issueEdge.Node.Labels.Edges))
@@ -141,9 +151,13 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 						Title    string
 						Comments struct {
 							Nodes []struct {
-								Body string
+								Author struct {
+									Login string
+								}
+								Body      string
+								CreatedAt string
 							}
-						} `graphql:"comments(first: 50)"`
+						} `graphql:"comments(last: 50)"`
 						Labels struct {
 							Edges []struct {
 								Node struct {
@@ -161,7 +175,7 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 						TimelineItems struct {
 							Nodes []struct {
 								AssignedEvent struct {
-										CreatedAt string
+									CreatedAt string
 								} `graphql:"... on AssignedEvent"`
 								LabeledEvent struct {
 									CreatedAt string
@@ -188,9 +202,18 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 	}
 
 	for _, issueEdge := range query.Repository.Issues.Edges {
-		comments := make([]string, len(issueEdge.Node.Comments.Nodes))
-		for index, comment := range issueEdge.Node.Comments.Nodes {
-			comments[index] = comment.Body
+
+		comments := make([]IssueComment, len(issueEdge.Node.Comments.Nodes))
+		for index, ghComment := range issueEdge.Node.Comments.Nodes {
+			commentTime, err := ghStringToTime(ghComment.CreatedAt)
+			if err != nil {
+				panic(err)
+			}
+			comments[index] = IssueComment{
+				Body:        ghComment.Body,
+				CreatedTime: commentTime,
+				User:        ghComment.Author.Login,
+			}
 		}
 
 		labels := make([]string, len(issueEdge.Node.Labels.Edges))
@@ -206,6 +229,7 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 		}
 
 		// TODO this is messy, clean up
+		// TODO double check order assumptions
 		lastAssignedTimeStr := ""
 		for _, timelineItem := range issueEdge.Node.TimelineItems.Nodes {
 			if timelineItem.AssignedEvent.CreatedAt != "" {
@@ -213,20 +237,22 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 				break // Get most recent only
 			}
 		}
-		lastAssignedTime, err := time.Parse(time.RFC3339, lastAssignedTimeStr)
-		if err != nil {
-			fmt.Println(err)
+		lastAssignedTime, err := ghStringToTime(lastAssignedTimeStr)
+		if err != nil && lastAssignedTimeStr != "" {
+			fmt.Println(lastAssignedTimeStr)
+			panic(err)
 		}
 
 		issues = append(issues, Issue{
-			Assignees: assignees,
+			Assignees:        assignees,
 			LastAssignedTime: lastAssignedTime,
-			Comments:  comments,
-			Id:        issueEdge.Node.Id,
-			Labels:    labels,
-			Number:    issueEdge.Node.Number,
-			Title:     issueEdge.Node.Title,
+			Comments:         comments,
+			Id:               issueEdge.Node.Id,
+			Labels:           labels,
+			Number:           issueEdge.Node.Number,
+			Title:            issueEdge.Node.Title,
 		})
+
 	}
 
 	prevPage := githubv4.NewString(query.Repository.Issues.PageInfo.StartCursor)
@@ -234,11 +260,12 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 	return issues, prevPage, nil
 }
 
+// TODO use label history
 // Removes SIG labels from the list if they had already been added in the past.
 func filterLabels(labels []string, issue Issue) []string {
 	sigsCommented := make(map[string]bool)
 	for _, comment := range issue.Comments {
-		for _, line := range strings.Split(comment, "\n") {
+		for _, line := range strings.Split(comment.Body, "\n") {
 			if strings.HasPrefix(line, "/sig") {
 				splitSigComment := strings.Split(line, " ")
 				if len(splitSigComment) > 1 {
@@ -255,4 +282,8 @@ func filterLabels(labels []string, issue Issue) []string {
 		}
 	}
 	return uniqueLabels
+}
+
+func ghStringToTime(timestr string) (time.Time, error) {
+	return time.Parse(time.RFC3339, timestr)
 }

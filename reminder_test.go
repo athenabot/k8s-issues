@@ -76,7 +76,7 @@ func TestFilterToIssuesNeedingReminders(t *testing.T) {
 			Assignees: []string{"someone"},
 			Comments: []IssueComment{
 				{
-					Body:        "mark-triage-reminder",
+					Body:        "If this issue has been triaged,",
 					CreatedTime: time.Now().Add(-time.Hour * 24 * 25),
 					User:        "athenabot",
 				},
@@ -88,7 +88,7 @@ func TestFilterToIssuesNeedingReminders(t *testing.T) {
 			Assignees: []string{"someone"},
 			Comments: []IssueComment{
 				{
-					Body:        "mark-triage-reminder",
+					Body:        "If this issue has been triaged,",
 					CreatedTime: time.Now().Add(-time.Hour * 24 * 31),
 					User:        "athenabot",
 				},

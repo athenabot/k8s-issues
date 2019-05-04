@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func sendReminders(httpClient *http.Client) {
+func sendTriageReminders(httpClient *http.Client) {
 	issues, _, err := getUnresolvedIssues(context.Background(), httpClient, nil, 30)
 	if err != nil {
 		panic(err)
@@ -38,7 +38,7 @@ func timeSinceTriageReminder(issue Issue) *time.Duration {
 	for i := len(issue.Comments) - 1; i >= 0; i-- {
 		comment := issue.Comments[i]
 		if comment.User == "athenabot" {
-			if strings.Contains(comment.Body, "mark-triage") {
+			if strings.Contains(comment.Body, "issue has been triaged") {
 				duration := time.Now().Sub(comment.CreatedTime)
 				return &duration
 			}
@@ -68,8 +68,7 @@ func filterIssuesAssignedLongerThan(issues []Issue, duration time.Duration) []Is
 
 func commentTriageReminder(ctx context.Context, httpClient *http.Client, issue *Issue, assignees []string) {
 	comment := strings.Join(assignees, " ") + "\n"
-	comment += "If this issue has been triaged, please comment `/remove-triage unresolved`."
-	comment += "\n\nMeta:\n/athenabot mark-triage-reminder"
-	fmt.Println(comment)
+	comment += "If this issue has been triaged, please comment `/remove-triage unresolved`." +
+		"\n\nIf you aren't able to handle this issue, consider unassigning yourself and/or adding the `help-wanted` label."
 	//addComment(ctx, httpClient, issue.Id, comment)
 }

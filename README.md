@@ -1,10 +1,13 @@
 # Athenabot k8s-issues
 
-This is a simple (WIP) bot, for classifying issues in kubernetes/kubernetes.
+This is a simple (WIP) bot, to help with issue management in the Kubernetes org.
 
-# How it works
+# What it does
 
-Athenabot reads recent GitHub issue data, and applies basic keyword scoring. If it finds suitable matches, it comments for the k8s ci-bot.
+* Tries to guess SIG labels for issues in kubernetes/kubernetes that have no SIG labels.
+* Labels new SIG-network tickets with `triage/unresolved`.
+    * Please file an issue if you would like this extended to your SIG!
+* Posts periodic reminder comments on `triage/unresolved` that have sat idle with an assignee.
 
 # Contributing
 
@@ -17,7 +20,7 @@ Suggestions and contributions are highly welcome. They can be:
 
 # Running
 
-Currently the bot runs in a hacky batch mode, this will change down the line to running as a service.
+Currently the bot runs in a hacky batch mode, this may change down the line to running as a service.
 
 Install a GitHub credential to secret.txt.
 

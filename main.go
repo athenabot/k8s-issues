@@ -33,7 +33,7 @@ func main() {
 		triageLabel(context.Background(), httpClient, &issue)
 	}
 
-	sendReminders(httpClient)
+	sendTriageReminders(httpClient)
 
 	//err := writeSeenIssues(context.Background(), issues)
 	//fmt.Println(err)

@@ -34,7 +34,7 @@ func commentWithSigs(ctx context.Context, httpClient *http.Client, issueId strin
 }
 
 func addComment(ctx context.Context, httpClient *http.Client, issueId string, comment string) error {
-	signature := "\n\n🤖 I am a bot run by @vllry. 👩‍🔬"
+	signature := "\n\n🤖 I am a bot run by vllry. 👩‍🔬"
 	client := githubv4.NewClient(httpClient)
 
 	input := githubv4.AddCommentInput{

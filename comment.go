@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/shurcooL/githubv4"
 	"net/http"
 )
@@ -19,7 +20,7 @@ var m struct {
 	} `graphql:"addComment(input: $input)"`
 }
 
-func commentWithSigs(ctx context.Context, httpClient *http.Client, issueId string, sigs []string) error {
+func commentWithSigs(ctx context.Context, httpClient *http.Client, issue *Issue, sigs []string) error {
 	if len(sigs) == 0 {
 		return nil
 	}
@@ -30,15 +31,16 @@ func commentWithSigs(ctx context.Context, httpClient *http.Client, issueId strin
 	}
 	comment += "\nThese SIGs are my best guesses for this issue. Please comment `/remove-sig <name>` if I am incorrect about one."
 
-	return addComment(ctx, httpClient, issueId, comment)
+	return addComment(ctx, httpClient, issue, comment)
 }
 
-func addComment(ctx context.Context, httpClient *http.Client, issueId string, comment string) error {
-	signature := "\n\n🤖 I am a bot run by @vllry. 👩‍🔬"
-	client := githubv4.NewClient(httpClient)
+func addComment(ctx context.Context, httpClient *http.Client, issue *Issue, comment string) error {
+	fmt.Printf("\nComment on issue %v: %v", issue.Url, comment)
+	signature := "\n\n🤖 I am a bot run by vllry. 👩‍🔬"
 
+	client := githubv4.NewClient(httpClient)
 	input := githubv4.AddCommentInput{
-		SubjectID: issueId,
+		SubjectID: issue.Id,
 		Body:      githubv4.String(comment + signature),
 	}
 	return client.Mutate(ctx, &m, input, nil)

@@ -20,7 +20,7 @@ func loadSecret() string {
 func main() {
 	src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: loadSecret()})
 	httpClient := oauth2.NewClient(context.Background(), src)
-	issues, _, err := getIssues(context.Background(), httpClient, nil, 30)
+	issues, _, err := getLatestIssues(context.Background(), httpClient, nil, 5)
 	if err != nil {
 		panic(err)
 	}
@@ -28,10 +28,13 @@ func main() {
 		labels := getSigLabelsForIssue(issue)
 		labels = filterLabels(labels, issue)
 		fmt.Println(labels, issue.Url)
-		err := commentWithSigs(context.Background(), httpClient, issue.Id, labels)
+		err := commentWithSigs(context.Background(), httpClient, &issue, labels)
 		fmt.Println(err)
 		triageLabel(context.Background(), httpClient, &issue)
 	}
+
+	sendTriageReminders(httpClient)
+
 	//err := writeSeenIssues(context.Background(), issues)
 	//fmt.Println(err)
 }

@@ -137,7 +137,36 @@ func getLatestIssues(ctx context.Context, httpClient *http.Client, cursor *githu
 	return issues, prevPage, nil
 }
 
-func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.String, numIssues int) ([]Issue, *githubv4.String, error) {
+func getUnresolvedIssues(ctx context.Context, httpClient *http.Client) ([]Issue, error) {
+	issues := make([]Issue, 0)
+
+	firstLoop := true
+	blankCursor := githubv4.NewString("") // Use for comparison. Cannot use len().
+	var cursor *githubv4.String = nil // nil -> "get first page"
+	for firstLoop || (cursor != nil && cursor != blankCursor) {
+		firstLoop = false
+
+		// Hard to tell if the cursor is "done" or not. Use the hasCursor indicator instead.
+		issueBatch, hasCursor, newCursor, err := getUnresolvedIssuesBatch(ctx, httpClient, cursor, 25)
+		cursor = newCursor // Goland complaints when assigning cursor directly.
+		if err != nil {
+			return nil, err // TODO retry, EG for rate limits.
+		}
+
+		for _, issue := range issueBatch {
+			issues = append(issues, issue)
+		}
+		fmt.Println("Got issues: ", len(issueBatch))
+
+		if !hasCursor {
+			break
+		}
+	}
+
+	return issues, nil
+}
+
+func getUnresolvedIssuesBatch(ctx context.Context, httpClient *http.Client, cursor *githubv4.String, numIssues int) ([]Issue, bool, *githubv4.String, error) {
 	var query struct {
 		Repository struct {
 			Issues struct {
@@ -199,7 +228,7 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 	issues := make([]Issue, 0)
 	err := client.Query(ctx, &query, variables)
 	if err != nil {
-		return nil, nil, err
+		return nil, false, nil, err
 	}
 
 	for _, issueEdge := range query.Repository.Issues.Edges {
@@ -259,7 +288,7 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client, cursor *g
 
 	prevPage := githubv4.NewString(query.Repository.Issues.PageInfo.StartCursor)
 
-	return issues, prevPage, nil
+	return issues, query.Repository.Issues.PageInfo.HasPreviousPage, prevPage, nil
 }
 
 // TODO use label history

@@ -1,4 +1,4 @@
-package main
+package athenabot
 
 type Sig struct {
 	name          string

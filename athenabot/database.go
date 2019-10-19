@@ -1,4 +1,4 @@
-package main
+package athenabot
 
 import (
 	"cloud.google.com/go/firestore"

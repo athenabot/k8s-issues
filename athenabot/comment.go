@@ -1,4 +1,4 @@
-package main
+package athenabot
 
 import (
 	"context"
@@ -20,7 +20,7 @@ var m struct {
 	} `graphql:"addComment(input: $input)"`
 }
 
-func commentWithSigs(ctx context.Context, httpClient *http.Client, issue *Issue, sigs []string) error {
+func CommentWithSigs(ctx context.Context, httpClient *http.Client, issue *Issue, sigs []string) error {
 	if len(sigs) == 0 {
 		return nil
 	}

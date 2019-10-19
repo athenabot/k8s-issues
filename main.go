@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/athenabot/k8s-issues/athenabot"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
@@ -10,7 +11,7 @@ import (
 )
 
 func loadSecret() string {
-	str, err := ioutil.ReadFile("secret.txt")
+	str, err := ioutil.ReadFile("secret")
 	if err != nil {
 		log.Println(err)
 	}
@@ -20,20 +21,20 @@ func loadSecret() string {
 func main() {
 	src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: loadSecret()})
 	httpClient := oauth2.NewClient(context.Background(), src)
-	issues, _, err := getLatestIssues(context.Background(), httpClient, nil, 30)
+	issues, _, err := athenabot.GetLatestIssues(context.Background(), httpClient, nil, 30)
 	if err != nil {
 		panic(err)
 	}
 	for _, issue := range issues {
-		labels := getSigLabelsForIssue(issue)
-		labels = filterLabels(labels, issue)
+		labels := athenabot.GetSigLabelsForIssue(issue)
+		labels = athenabot.FilterLabels(labels, issue)
 		fmt.Println(labels, issue.Url)
-		err := commentWithSigs(context.Background(), httpClient, &issue, labels)
+		err := athenabot.CommentWithSigs(context.Background(), httpClient, &issue, labels)
 		fmt.Println(err)
-		triageLabel(context.Background(), httpClient, &issue)
+		athenabot.TriageLabel(context.Background(), httpClient, &issue)
 	}
 
-	sendTriageReminders(httpClient)
+	athenabot.SendTriageReminders(httpClient)
 
 	//err := writeSeenIssues(context.Background(), issues)
 	//fmt.Println(err)

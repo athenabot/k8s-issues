@@ -1,4 +1,4 @@
-package main
+package athenabot
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func sendTriageReminders(httpClient *http.Client) {
+func SendTriageReminders(httpClient *http.Client) {
 	issues, err := getUnresolvedIssues(context.Background(), httpClient)
 	if err != nil {
 		panic(err)

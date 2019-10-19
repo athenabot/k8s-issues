@@ -1,4 +1,4 @@
-package main
+package athenabot
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 var scoreThreshhold float64 = 5
 
 // Returns the list of sigs to classify an issue as.
-func getSigLabelsForIssue(issue Issue) []string {
+func GetSigLabelsForIssue(issue Issue) []string {
 	var sigs []string = nil
 
 	var sizeFactor float64 = 400

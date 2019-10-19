@@ -1,4 +1,4 @@
-package main
+package athenabot
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func issueNeedsTriage(issue *Issue) bool {
 	return true
 }
 
-func triageLabel(ctx context.Context, httpClient *http.Client, issue *Issue) {
+func TriageLabel(ctx context.Context, httpClient *http.Client, issue *Issue) {
 	if issueNeedsTriage(issue) {
 		comment := "/triage unresolved"
 		comment += "\n\nComment `/remove-triage unresolved` when the issue is assessed and confirmed."

@@ -1,4 +1,4 @@
-package main
+package athenabot
 
 import (
 	"context"
@@ -47,7 +47,7 @@ func (issue *Issue) hasCommentWithCommand(command string, key string) bool {
 	return false
 }
 
-func getLatestIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.String, numIssues int) ([]Issue, *githubv4.String, error) {
+func GetLatestIssues(ctx context.Context, httpClient *http.Client, cursor *githubv4.String, numIssues int) ([]Issue, *githubv4.String, error) {
 	var query struct {
 		Repository struct {
 			Issues struct {
@@ -293,7 +293,7 @@ func getUnresolvedIssuesBatch(ctx context.Context, httpClient *http.Client, curs
 
 // TODO use label history
 // Removes SIG labels from the list if they had already been added in the past.
-func filterLabels(labels []string, issue Issue) []string {
+func FilterLabels(labels []string, issue Issue) []string {
 	sigsCommented := make(map[string]bool)
 	for _, comment := range issue.Comments {
 		for _, line := range strings.Split(comment.Body, "\n") {

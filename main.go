@@ -7,11 +7,13 @@ import (
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 )
 
 func loadSecret() string {
-	str, err := ioutil.ReadFile("secret")
+	secretPath := os.Getenv("GITHUB_TOKEN")
+	str, err := ioutil.ReadFile(secretPath)
 	if err != nil {
 		log.Println(err)
 	}

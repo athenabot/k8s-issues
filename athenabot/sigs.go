@@ -18,34 +18,26 @@ var sigAutoscaling = Sig{
 	weakMatches:   []string{},
 }
 
-var sigAws = Sig{
-	name:          "aws",
-	strongMatches: []string{"aws", "eks", "cloud-provider-aws", "aws-alb-ingress-controller", "aws-iam-authenticator", "aws-encryption-provider", "aws-ebs-csi-driver", "aws alb ingress controller", "aws iam authenticator", "aws encryption provider", "aws ebs csi driver"},
-	weakMatches:   []string{"iam", "efs", "ebs", "alb ingress", "heptio authenticator"},
-}
-
-var sigAzure = Sig{
-	name:          "azure",
-	strongMatches: []string{"azure"},
-	weakMatches:   []string{},
-}
-
 var sigCli = Sig{
 	name:          "cli",
 	strongMatches: []string{},
 	weakMatches:   []string{"kubectl"},
 }
 
+var sigCloudProvider = Sig{
+	name: "cloud-provider",
+	strongMatches: []string{
+		"aws", "eks", "cloud-provider-aws", "aws-alb-ingress-controller", "aws-iam-authenticator", "aws-encryption-provider", "aws-ebs-csi-driver", "aws alb ingress controller", "aws iam authenticator", "aws encryption provider", "aws ebs csi driver",
+		"azure",
+		"gcp", "glb", "compute engine",
+		"vmware", "vsphere"},
+	weakMatches: []string{"iam", "efs", "ebs", "alb ingress", "heptio authenticator"},
+}
+
 var sigClusterLifeCycle = Sig{
 	name:          "cluster-lifecycle",
 	strongMatches: []string{"kubeadm"},
 	weakMatches:   []string{},
-}
-
-var sigGcp = Sig{
-	name:          "gcp",
-	strongMatches: []string{"gcp", "glb", "compute engine"},
-	weakMatches:   []string{"google"},
 }
 
 var sigMulticluster = Sig{
@@ -78,12 +70,6 @@ var sigStorage = Sig{
 	weakMatches:   []string{"pv", "pvc", "efs", "ebs"},
 }
 
-var sigVmWare = Sig{
-	name:          "vmware",
-	strongMatches: []string{"vmware", "vsphere"},
-	weakMatches:   []string{},
-}
-
 var sigWindows = Sig{
 	name:          "windows",
 	strongMatches: []string{"windows"},
@@ -93,16 +79,13 @@ var sigWindows = Sig{
 var allSigs = []Sig{
 	sigApps,
 	sigAutoscaling,
-	sigAws,
-	sigAzure,
 	sigCli,
+	sigCloudProvider,
 	sigClusterLifeCycle,
-	sigGcp,
 	sigMulticluster,
 	sigNetwork,
 	sigNode,
 	sigScheduling,
 	sigStorage,
-	sigVmWare,
 	sigWindows,
 }

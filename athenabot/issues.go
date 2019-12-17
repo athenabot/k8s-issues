@@ -142,7 +142,7 @@ func getUnresolvedIssues(ctx context.Context, httpClient *http.Client) ([]Issue,
 
 	firstLoop := true
 	blankCursor := githubv4.NewString("") // Use for comparison. Cannot use len().
-	var cursor *githubv4.String = nil // nil -> "get first page"
+	var cursor *githubv4.String = nil     // nil -> "get first page"
 	for firstLoop || (cursor != nil && cursor != blankCursor) {
 		firstLoop = false
 
@@ -212,7 +212,7 @@ func getUnresolvedIssuesBatch(ctx context.Context, httpClient *http.Client, curs
 							}
 						} `graphql:"timeline(last: 50)"`
 						Number int
-						Url string
+						Url    string
 					}
 				}
 			} `graphql:"issues(last: $numIssues, before: $issuesCursor, states:OPEN, labels:[\"triage/unresolved\"])"`

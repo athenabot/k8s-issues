@@ -60,7 +60,7 @@ var sigNode = Sig{
 
 var sigScheduling = Sig{
 	name:          "scheduling",
-	strongMatches: []string{"sheduler"},
+	strongMatches: []string{"scheduler"},
 	weakMatches:   []string{"schedule"},
 }
 

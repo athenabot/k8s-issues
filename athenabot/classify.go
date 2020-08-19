@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var scoreThreshhold float64 = 5
+var scoreThreshold float64 = 5
 
 // Returns the list of sigs to classify an issue as.
 func GetSigLabelsForIssue(issue Issue) []string {
@@ -30,7 +30,7 @@ func GetSigLabelsForIssue(issue Issue) []string {
 
 	for sigName, scoreData := range getScoresForSigs(issue) {
 		fmt.Println("Debug", sigName, scoreData.scoreItems)
-		if float64(scoreData.scoreTotal) >= scoreThreshhold*sizeScaling {
+		if float64(scoreData.scoreTotal) >= scoreThreshold*sizeScaling {
 			sigs = append(sigs, sigName)
 		}
 	}

@@ -3,8 +3,9 @@ package athenabot
 import (
 	"context"
 	"fmt"
-	"github.com/shurcooL/githubv4"
 	"net/http"
+
+	"github.com/shurcooL/githubv4"
 )
 
 var m struct {
@@ -36,12 +37,11 @@ func CommentWithSigs(ctx context.Context, httpClient *http.Client, issue *Issue,
 
 func addComment(ctx context.Context, httpClient *http.Client, issue *Issue, comment string) error {
 	fmt.Printf("\nComment on issue %v: %v", issue.Url, comment)
-	signature := "\n\n🤖 I am a bot run by vllry. 👩‍🔬"
 
 	client := githubv4.NewClient(httpClient)
 	input := githubv4.AddCommentInput{
 		SubjectID: issue.Id,
-		Body:      githubv4.String(comment + signature),
+		Body:      githubv4.String(comment),
 	}
 	return client.Mutate(ctx, &m, input, nil)
 }
